@@ -1,0 +1,1163 @@
+<title>할일 관리</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f9fc;
+  --text-primary: #1a202c;
+  --text-secondary: #718096;
+  --border: #e2e8f0;
+  --accent: #4299e1;
+  --accent-light: #ebf8ff;
+  --danger: #f56565;
+  --success: #48bb78;
+  --warning: #ed8936;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #1a202c;
+    --bg-secondary: #2d3748;
+    --text-primary: #f7fafc;
+    --text-secondary: #a0aec0;
+    --border: #4a5568;
+    --accent: #63b3ed;
+    --accent-light: #2c5282;
+    --danger: #fc8181;
+    --success: #68d391;
+    --warning: #f6ad55;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg-primary: #1a202c;
+  --bg-secondary: #2d3748;
+  --text-primary: #f7fafc;
+  --text-secondary: #a0aec0;
+  --border: #4a5568;
+  --accent: #63b3ed;
+  --accent-light: #2c5282;
+  --danger: #fc8181;
+  --success: #68d391;
+  --warning: #f6ad55;
+  color-scheme: dark;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 20px;
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  position: sticky;
+  top: 20px;
+}
+
+.sidebar h2 {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.project-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background 0.2s;
+}
+
+.project-item:hover {
+  background: var(--bg-secondary);
+}
+
+.project-item.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.project-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.project-del {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  display: none;
+}
+
+.project-item:hover .project-del {
+  display: block;
+}
+
+.project-del:hover {
+  color: var(--danger);
+}
+
+.project-add {
+  display: flex;
+  gap: 6px;
+}
+
+.project-add input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.project-add input:focus {
+  border-color: var(--accent);
+}
+
+.project-add button {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px 0;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-section {
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.input-section input[type="text"] {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: var(--text-primary);
+  outline: none;
+  padding: 8px;
+}
+
+.input-section input[type="text"]::placeholder {
+  color: var(--text-secondary);
+}
+
+.input-section input[type="date"] {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.due-label {
+  align-self: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.todo-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.filter-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.filter-btn:hover {
+  border-color: var(--accent);
+}
+
+.todos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.todo-item {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+}
+
+.todo-item:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.todo-item.done {
+  opacity: 0.6;
+  background: var(--bg-secondary);
+}
+
+.todo-item.done .todo-text {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.todo-item.done .checkbox {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.checkbox::after {
+  content: '';
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scaleY(0);
+  transition: all 0.2s;
+}
+
+.todo-item.done .checkbox::after {
+  transform: rotate(45deg) scaleY(1);
+}
+
+.todo-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.todo-text {
+  color: var(--text-primary);
+  word-break: break-word;
+  margin-bottom: 6px;
+}
+
+.todo-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.todo-date.overdue {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.todo-date.today {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.todo-date.soon {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.todo-note {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 36px;
+  outline: none;
+}
+
+.todo-note:focus {
+  border-style: solid;
+  border-color: var(--accent);
+}
+
+.todo-note::placeholder {
+  color: var(--text-secondary);
+}
+
+.edit-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.edit-row input[type="text"] {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--text-primary);
+  font-size: 15px;
+  outline: none;
+}
+
+.edit-row input[type="date"] {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.alert-box {
+  background: var(--bg-primary);
+  border: 1px solid var(--warning);
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.alert-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.alert-head button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 3px 8px;
+}
+
+.alert-row {
+  display: flex;
+  gap: 8px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.alert-row:hover {
+  color: var(--accent);
+}
+
+.alert-row .overdue {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.alert-row .today {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.alert-row .soon {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.alert-proj {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.todo-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-small {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.btn-small:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.btn-small.delete:hover {
+  background: rgba(245, 101, 101, 0.1);
+  color: var(--danger);
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  max-width: 300px;
+  animation: slideIn 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  .input-section {
+    flex-direction: column;
+  }
+
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  .project-del {
+    display: block;
+  }
+
+  .stats {
+    gap: 30px;
+  }
+}
+</style>
+
+<div class="container">
+  <div class="layout">
+  <aside class="sidebar">
+    <h2>프로젝트</h2>
+    <div class="project-list" id="project-list"></div>
+    <div class="project-add">
+      <input type="text" id="project-input" placeholder="새 프로젝트" maxlength="30">
+      <button class="btn" id="project-add-btn">+</button>
+    </div>
+  </aside>
+
+  <div class="main">
+  <header>
+    <h1 id="page-title">✓ 오늘의 할일</h1>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number" id="total-count">0</div>
+        <div class="stat-label">전체</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" id="remaining-count">0</div>
+        <div class="stat-label">진행중</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" id="completed-count">0</div>
+        <div class="stat-label">완료</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="input-section">
+    <input type="text" id="todo-input" placeholder="새로운 할일을 입력하세요..." maxlength="100">
+    <label class="due-label" for="todo-date">기한</label>
+    <input type="date" id="todo-date" title="기한 설정 (선택)">
+    <button class="btn" id="add-btn">추가</button>
+  </div>
+
+  <div class="alert-box" id="alert-box" hidden></div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">전체</button>
+    <button class="filter-btn" data-filter="active">진행중</button>
+    <button class="filter-btn" data-filter="completed">완료</button>
+  </div>
+
+  <div class="todos-list" id="todos-list"></div>
+  <div class="empty" id="empty-state" hidden>
+    <div class="empty-icon">📝</div>
+    <div class="empty-text">할일이 없습니다</div>
+    <div style="font-size: 13px;">새로운 할일을 추가해보세요!</div>
+  </div>
+  </div>
+  </div>
+</div>
+
+<script>
+  const app = (() => {
+    const STORAGE_KEY = 'todos-app-v2';
+    const PROJECTS_KEY = 'todos-projects-v1';
+    const DEFAULT_PROJECT = { id: 'default', name: '기본' };
+    let todos = [];
+    let projects = [DEFAULT_PROJECT];
+    let currentProjectId = DEFAULT_PROJECT.id;
+    let currentFilter = 'all';
+    let editingId = null;
+
+    // DOM 요소
+    const elements = {
+      input: document.getElementById('todo-input'),
+      dateInput: document.getElementById('todo-date'),
+      addBtn: document.getElementById('add-btn'),
+      todosList: document.getElementById('todos-list'),
+      emptyState: document.getElementById('empty-state'),
+      totalCount: document.getElementById('total-count'),
+      remainingCount: document.getElementById('remaining-count'),
+      completedCount: document.getElementById('completed-count'),
+      filterBtns: document.querySelectorAll('.filter-btn'),
+      projectList: document.getElementById('project-list'),
+      projectInput: document.getElementById('project-input'),
+      projectAddBtn: document.getElementById('project-add-btn'),
+      pageTitle: document.getElementById('page-title'),
+    };
+
+    // 프로젝트 로드/저장
+    const loadProjects = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem(PROJECTS_KEY));
+        if (stored && Array.isArray(stored.projects) && stored.projects.length) {
+          projects = stored.projects;
+          currentProjectId = projects.some((p) => p.id === stored.currentId)
+            ? stored.currentId
+            : projects[0].id;
+        }
+      } catch {}
+    };
+
+    const saveProjects = () => {
+      try {
+        localStorage.setItem(
+          PROJECTS_KEY,
+          JSON.stringify({ projects, currentId: currentProjectId })
+        );
+      } catch {
+        showToast('저장에 실패했습니다');
+      }
+    };
+
+    const projectTodos = () => todos.filter((t) => t.projectId === currentProjectId);
+
+    const addProject = () => {
+      const name = elements.projectInput.value.trim();
+      if (!name) {
+        elements.projectInput.focus();
+        return;
+      }
+      const project = { id: 'p' + Date.now(), name };
+      projects.push(project);
+      currentProjectId = project.id;
+      saveProjects();
+      elements.projectInput.value = '';
+      render();
+      elements.input.focus();
+    };
+
+    const selectProject = (id) => {
+      currentProjectId = id;
+      saveProjects();
+      render();
+    };
+
+    const deleteProject = (id) => {
+      if (projects.length <= 1) {
+        showToast('마지막 프로젝트는 삭제할 수 없습니다');
+        return;
+      }
+      const count = todos.filter((t) => t.projectId === id).length;
+      const name = projects.find((p) => p.id === id)?.name || '';
+      if (!confirm(`"${name}" 프로젝트와 할일 ${count}개를 삭제할까요?`)) return;
+      projects = projects.filter((p) => p.id !== id);
+      todos = todos.filter((t) => t.projectId !== id);
+      if (currentProjectId === id) currentProjectId = projects[0].id;
+      saveProjects();
+      saveTodos();
+      render();
+    };
+
+    // 로컬스토리지에서 로드
+    const loadTodos = () => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+      } catch {
+        return [];
+      }
+    };
+
+    // 로컬스토리지에 저장
+    const saveTodos = () => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+      } catch {
+        showToast('저장에 실패했습니다');
+      }
+    };
+
+    // 새 할일 추가
+    const addTodo = () => {
+      const text = elements.input.value.trim();
+      const date = elements.dateInput.value;
+
+      if (!text) {
+        elements.input.focus();
+        return;
+      }
+
+      const todo = {
+        id: Date.now(),
+        projectId: currentProjectId,
+        text,
+        date: date || '',
+        done: false,
+        note: '',
+        createdAt: new Date().toISOString(),
+      };
+
+      todos.unshift(todo);
+      saveTodos();
+      render();
+      elements.input.value = '';
+      elements.dateInput.value = '';
+      elements.input.focus();
+      showToast('할일이 추가되었습니다');
+    };
+
+    // 할일 토글
+    const toggleTodo = (id) => {
+      const todo = todos.find((t) => t.id === id);
+      if (todo) {
+        todo.done = !todo.done;
+        saveTodos();
+        render();
+      }
+    };
+
+    // 할일 수정 (내용/기한)
+    const startEdit = (id) => {
+      editingId = id;
+      render();
+      const el = document.getElementById('edit-text');
+      if (el) {
+        el.focus();
+        el.setSelectionRange(el.value.length, el.value.length);
+      }
+    };
+
+    const cancelEdit = () => {
+      editingId = null;
+      render();
+    };
+
+    const saveEdit = (id) => {
+      const todo = todos.find((t) => t.id === id);
+      const text = document.getElementById('edit-text').value.trim();
+      if (!todo || !text) {
+        document.getElementById('edit-text').focus();
+        return;
+      }
+      todo.text = text;
+      todo.date = document.getElementById('edit-date').value;
+      editingId = null;
+      saveTodos();
+      render();
+      checkReminders();
+      showToast('할일이 수정되었습니다');
+    };
+
+    // ---- 기한 알림 ----
+    const NOTIFIED_KEY = 'todos-notified-v1';
+    const dayKey = (d) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    // 기한이 지났거나 오늘/내일인 미완료 할일
+    const getDueTodos = () =>
+      todos
+        .filter((t) => !t.done && t.date)
+        .map((t) => ({ todo: t, info: getDateInfo(t.date) }))
+        .filter(({ todo, info }) => {
+          const [y, m, d] = todo.date.split('-').map(Number);
+          const diff = Math.round((new Date(y, m - 1, d) - new Date().setHours(0, 0, 0, 0)) / 86400000);
+          return info && diff <= 1;
+        })
+        .sort((a, b) => a.todo.date.localeCompare(b.todo.date));
+
+    const renderAlerts = () => {
+      const due = getDueTodos();
+      const box = document.getElementById('alert-box');
+      const canAsk = 'Notification' in window && Notification.permission === 'default';
+      if (!due.length) {
+        box.hidden = true;
+        return;
+      }
+      box.hidden = false;
+      box.innerHTML = `
+        <div class="alert-head">
+          <span>⏰ 기한 임박 ${due.length}건</span>
+          ${canAsk ? '<button onclick="app.enableNotifications()">🔔 브라우저 알림 켜기</button>' : ''}
+        </div>
+        ${due
+          .map(({ todo, info }) => {
+            const proj = projects.find((p) => p.id === todo.projectId);
+            return `<div class="alert-row" onclick="app.selectProject('${todo.projectId}')">
+              <span class="${info.class}">${info.text}</span>
+              <span>${escapeHtml(todo.text)}</span>
+              <span class="alert-proj">${proj ? escapeHtml(proj.name) : ''}</span>
+            </div>`;
+          })
+          .join('')}`;
+    };
+
+    const enableNotifications = async () => {
+      if (!('Notification' in window)) {
+        showToast('이 브라우저는 알림을 지원하지 않습니다');
+        return;
+      }
+      const result = await Notification.requestPermission();
+      showToast(result === 'granted' ? '알림이 켜졌습니다' : '알림이 차단되었습니다');
+      checkReminders();
+    };
+
+    // 하루에 할일·상태(지남/오늘/내일)당 한 번만 브라우저 알림
+    const checkReminders = () => {
+      renderAlerts();
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      const today = dayKey(new Date());
+      let notified = {};
+      try {
+        notified = JSON.parse(localStorage.getItem(NOTIFIED_KEY)) || {};
+      } catch {}
+      // 지난 날짜 기록 정리
+      Object.keys(notified).forEach((k) => {
+        if (!k.startsWith(today)) delete notified[k];
+      });
+      getDueTodos().forEach(({ todo, info }) => {
+        const key = `${today}:${todo.id}:${info.class}`;
+        if (notified[key]) return;
+        notified[key] = true;
+        new Notification(`${info.text} · ${todo.text}`, {
+          body: todo.note ? todo.note.slice(0, 100) : '기한을 확인하세요',
+        });
+      });
+      try {
+        localStorage.setItem(NOTIFIED_KEY, JSON.stringify(notified));
+      } catch {}
+    };
+
+    // 특이사항 메모 수정 (재렌더링 없이 저장해 포커스 유지)
+    const updateNote = (id, note) => {
+      const todo = todos.find((t) => t.id === id);
+      if (todo) {
+        todo.note = note;
+        saveTodos();
+      }
+    };
+
+    // 할일 삭제
+    const deleteTodo = (id) => {
+      todos = todos.filter((t) => t.id !== id);
+      saveTodos();
+      render();
+      showToast('할일이 삭제되었습니다');
+    };
+
+    // 날짜 포맷 및 상태
+    const getDateInfo = (dateStr) => {
+      if (!dateStr) return null;
+
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const todoDate = new Date(year, month - 1, day);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const diff = Math.floor((todoDate - today) / (1000 * 60 * 60 * 24));
+
+      if (diff < 0) {
+        return { text: `${-diff}일 지남`, class: 'overdue' };
+      } else if (diff === 0) {
+        return { text: '오늘', class: 'today' };
+      } else if (diff === 1) {
+        return { text: '내일', class: 'soon' };
+      } else if (diff <= 7) {
+        return { text: `${diff}일 후`, class: 'soon' };
+      } else {
+        return { text: `${month}월 ${day}일`, class: '' };
+      }
+    };
+
+    // 작성일 (createdAt 없으면 id의 타임스탬프 사용)
+    const formatCreated = (todo) => {
+      const d = new Date(todo.createdAt || todo.id);
+      if (isNaN(d)) return '';
+      return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
+    };
+
+    // 토스트 메시지
+    const showToast = (message) => {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    };
+
+    // 통계 업데이트
+    const updateStats = () => {
+      const list = projectTodos();
+      const total = list.length;
+      const completed = list.filter((t) => t.done).length;
+      const remaining = total - completed;
+
+      elements.totalCount.textContent = total;
+      elements.remainingCount.textContent = remaining;
+      elements.completedCount.textContent = completed;
+    };
+
+    // 프로젝트 목록 렌더링
+    const renderProjects = () => {
+      const current = projects.find((p) => p.id === currentProjectId);
+      elements.pageTitle.textContent = `✓ ${current ? current.name : '할일'}`;
+      elements.projectList.innerHTML = projects
+        .map((p) => {
+          const open = todos.filter((t) => t.projectId === p.id && !t.done).length;
+          return `
+            <div class="project-item ${p.id === currentProjectId ? 'active' : ''}" onclick="app.selectProject('${p.id}')">
+              <span class="project-name">${escapeHtml(p.name)}</span>
+              <span class="project-count">${open}</span>
+              <button class="project-del" title="프로젝트 삭제" onclick="event.stopPropagation(); app.deleteProject('${p.id}')">×</button>
+            </div>
+          `;
+        })
+        .join('');
+    };
+
+    // 렌더링
+    const render = () => {
+      updateStats();
+      renderProjects();
+      renderAlerts();
+
+      const filtered = projectTodos().filter((todo) => {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'active') return !todo.done;
+        if (currentFilter === 'completed') return todo.done;
+      });
+
+      if (filtered.length === 0) {
+        elements.todosList.innerHTML = '';
+        elements.emptyState.hidden = false;
+        return;
+      }
+
+      elements.emptyState.hidden = true;
+      elements.todosList.innerHTML = filtered
+        .map((todo) => {
+          const dateInfo = getDateInfo(todo.date);
+          const editing = todo.id === editingId;
+          return `
+            <div class="todo-item ${todo.done ? 'done' : ''}">
+              <div class="checkbox" onclick="app.toggleTodo(${todo.id})"></div>
+              <div class="todo-content">
+                ${
+                  editing
+                    ? `<div class="edit-row">
+                        <input type="text" id="edit-text" maxlength="100" value="${escapeHtml(todo.text)}" onkeydown="if(event.key==='Enter')app.saveEdit(${todo.id});if(event.key==='Escape')app.cancelEdit()">
+                        <input type="date" id="edit-date" value="${escapeHtml(todo.date || '')}">
+                      </div>`
+                    : `<div class="todo-text">${escapeHtml(todo.text)}</div>
+                      <div class="todo-meta">
+                        <span class="todo-date">작성 ${formatCreated(todo)}</span>
+                        ${
+                          dateInfo
+                            ? `<span class="todo-date ${dateInfo.class}">기한 ${dateInfo.text}</span>`
+                            : ''
+                        }
+                      </div>`
+                }
+                <textarea class="todo-note" rows="2" placeholder="특이사항을 메모하세요..." oninput="app.updateNote(${todo.id}, this.value)">${escapeHtml(todo.note || '')}</textarea>
+              </div>
+              <div class="todo-actions">
+                ${
+                  editing
+                    ? `<button class="btn-small" onclick="app.saveEdit(${todo.id})">저장</button>
+                       <button class="btn-small" onclick="app.cancelEdit()">취소</button>`
+                    : `<button class="btn-small" onclick="app.startEdit(${todo.id})">수정</button>
+                       <button class="btn-small delete" onclick="app.deleteTodo(${todo.id})">삭제</button>`
+                }
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+    };
+
+    // HTML 이스케이프
+    const escapeHtml = (text) => {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+      };
+      return text.replace(/[&<>"']/g, (m) => map[m]);
+    };
+
+    // 이벤트 리스너 설정
+    const init = () => {
+      todos = loadTodos();
+      loadProjects();
+      // 프로젝트가 없던 기존 할일은 기본 프로젝트로 이동
+      let migrated = false;
+      todos.forEach((t) => {
+        if (!projects.some((p) => p.id === t.projectId)) {
+          t.projectId = projects[0].id;
+          migrated = true;
+        }
+      });
+      if (migrated) saveTodos();
+
+      elements.projectAddBtn.addEventListener('click', addProject);
+      elements.projectInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addProject();
+      });
+      elements.addBtn.addEventListener('click', addTodo);
+      elements.input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addTodo();
+      });
+
+      // 필터 버튼
+      elements.filterBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          elements.filterBtns.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          render();
+        });
+      });
+
+      // 기한은 선택 사항 (비워두면 기한 없음)
+      render();
+      elements.input.focus();
+
+      checkReminders();
+      setInterval(checkReminders, 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          if (editingId === null) render();
+          checkReminders();
+        }
+      });
+    };
+
+    init();
+
+    return {
+      addTodo,
+      toggleTodo,
+      updateNote,
+      deleteTodo,
+      selectProject,
+      deleteProject,
+      startEdit,
+      cancelEdit,
+      saveEdit,
+      enableNotifications,
+    };
+  })();
+</script>
