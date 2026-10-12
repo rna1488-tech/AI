@@ -180,6 +180,40 @@ body {
   min-width: 0;
 }
 
+.resizer {
+  width: 8px;
+  margin: 0 -8px;
+  align-self: stretch;
+  flex-shrink: 0;
+  cursor: col-resize;
+  position: relative;
+  touch-action: none;
+}
+
+.resizer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.resizer:hover::after,
+.resizer.dragging::after {
+  opacity: 1;
+  background: var(--accent);
+}
+
+body.resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
 header {
   text-align: center;
   margin-bottom: 30px;
@@ -610,8 +644,12 @@ h1 {
   }
 
   .sidebar {
-    width: 100%;
+    width: 100% !important;
     position: static;
+  }
+
+  .resizer {
+    display: none;
   }
 
   .project-del {
@@ -634,6 +672,8 @@ h1 {
       <button class="btn" id="project-add-btn">+</button>
     </div>
   </aside>
+
+  <div class="resizer" id="resizer" title="드래그해서 할일 영역 크기 조절 (더블클릭: 초기화)"></div>
 
   <div class="main">
   <header>
@@ -1159,5 +1199,52 @@ h1 {
       saveEdit,
       enableNotifications,
     };
+  })();
+
+  // 사이드바/할일 영역 크기 조절
+  (() => {
+    const WIDTH_KEY = 'todos-sidebar-width';
+    const MIN = 0, MAX = 400, DEFAULT = 220;
+    const sidebar = document.querySelector('.sidebar');
+    const resizer = document.getElementById('resizer');
+
+    const apply = (w) => {
+      w = Math.max(MIN, Math.min(MAX, w));
+      sidebar.style.width = w + 'px';
+      sidebar.style.display = w < 60 ? 'none' : '';
+      return w;
+    };
+
+    try {
+      const saved = parseInt(localStorage.getItem(WIDTH_KEY), 10);
+      if (!isNaN(saved)) apply(saved);
+    } catch (e) {}
+
+    const save = (w) => {
+      try { localStorage.setItem(WIDTH_KEY, String(w)); } catch (e) {}
+    };
+
+    resizer.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = sidebar.style.display === 'none' ? 0 : sidebar.getBoundingClientRect().width;
+      let width = startW;
+      resizer.setPointerCapture(e.pointerId);
+      resizer.classList.add('dragging');
+      document.body.classList.add('resizing');
+
+      const onMove = (ev) => { width = apply(startW + ev.clientX - startX); };
+      const onUp = () => {
+        resizer.removeEventListener('pointermove', onMove);
+        resizer.removeEventListener('pointerup', onUp);
+        resizer.classList.remove('dragging');
+        document.body.classList.remove('resizing');
+        save(width < 60 ? 0 : width);
+      };
+      resizer.addEventListener('pointermove', onMove);
+      resizer.addEventListener('pointerup', onUp);
+    });
+
+    resizer.addEventListener('dblclick', () => save(apply(DEFAULT)));
   })();
 </script>
